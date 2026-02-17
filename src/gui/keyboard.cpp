@@ -35,10 +35,23 @@ static void kb_event_cb(lv_obj_t * ta, lv_event_t event);
 
 void keyboard_prelim( void ) {
     if( !kb_style_initialized ) {
+#if defined( M5PAPER )
+        /*
+         * M5Paper: create keyboard on lv_layer_top() so it renders above
+         * the tileview. Using lv_scr_act() places it behind the tileview,
+         * and using a dedicated tile causes nested tile-jump freezes on e-ink.
+         */
+        kb_screen = lv_cont_create( lv_layer_top(), NULL );
+        lv_obj_add_style( kb_screen, LV_OBJ_PART_MAIN, SETUP_STYLE );
+        /* Make keyboard container smaller on M5Paper to limit e-ink refresh area */
+        lv_obj_set_size( kb_screen, lv_disp_get_hor_res( NULL ), 260 );
+        lv_obj_align( kb_screen, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, STATUSBAR_HEIGHT );
+#else
         kb_screen = lv_cont_create( lv_scr_act(), NULL );
         lv_obj_add_style( kb_screen, LV_OBJ_PART_MAIN, SETUP_STYLE );
         lv_obj_set_size( kb_screen, lv_disp_get_hor_res( NULL ) , lv_disp_get_ver_res( NULL ) );
         lv_obj_align( kb_screen, lv_scr_act(), LV_ALIGN_IN_BOTTOM_MID, 0, STATUSBAR_HEIGHT );
+#endif
         
         kb_textarea = lv_textarea_create( kb_screen, NULL );
         lv_obj_add_protect( kb_textarea, LV_PROTECT_CLICK_FOCUS );
@@ -93,10 +106,13 @@ void num_keyboard_setup( void ) {
 static void kb_event_cb( lv_obj_t * ta, lv_event_t event ) {
 
     lv_keyboard_def_event_cb( ta, event );
+    log_i("kb_event_cb: event %d", event);
     switch( event ) {
         case( LV_EVENT_CANCEL ):    keyboard_hide();
+                                    log_i("kb_event_cb: CANCEL");
                                     break;
         case( LV_EVENT_APPLY ):     lv_textarea_set_text( kb_user_textarea, lv_textarea_get_text( kb_textarea ) );
+                                    log_i("kb_event_cb: APPLY");
                                     keyboard_hide();
                                     break;
     }
@@ -106,13 +122,16 @@ void keyboard_set_textarea( lv_obj_t *textarea ){
     /*
      * check if keyboard already initialized
      */
-    if ( kb == NULL )
+    if ( kb == NULL ) {
+        log_e("keyboard not initialized, kb is NULL");
         return;
+    }
 
-    keyboard_show();
+    log_i("keyboard_set_textarea called, showing keyboard");
     kb_user_textarea = textarea;
     lv_textarea_set_text( kb_textarea, lv_textarea_get_text( textarea ) );
     lv_keyboard_set_textarea( kb, kb_textarea );
+    keyboard_show();
 }
 
 void num_keyboard_set_textarea( lv_obj_t *textarea ){
@@ -122,15 +141,16 @@ void num_keyboard_set_textarea( lv_obj_t *textarea ){
     if ( nkb == NULL )
         return;
 
-    num_keyboard_show();
     kb_user_textarea = textarea;
     lv_textarea_set_text( kb_textarea, lv_textarea_get_text( textarea ) );
     lv_keyboard_set_textarea( nkb, kb_textarea );
+    num_keyboard_show();
 }
 
 void keyboard_hide( void ) {
+    log_i("keyboard_hide called");
     if ( kb_screen != NULL ) {
-    	lv_obj_set_hidden( kb_screen, true );
+        lv_obj_set_hidden( kb_screen, true );
     }
 
     if ( kb_textarea != NULL) {
@@ -152,13 +172,15 @@ void keyboard_show( void ) {
      */
     if ( kb == NULL )
         return;
-
+    log_i("keyboard_show called");
     lv_obj_set_hidden( kb_screen, false );
     lv_obj_set_hidden( kb_textarea, false );
     lv_obj_set_hidden( kb, false );
     lv_obj_align( kb_screen, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, statusbar_get_hidden_state()?0:STATUSBAR_HEIGHT );
     lv_obj_align( kb, kb_screen, LV_ALIGN_IN_BOTTOM_MID, 0, statusbar_get_hidden_state()?0:-STATUSBAR_HEIGHT );
     lv_obj_align( nkb, kb_screen, LV_ALIGN_IN_BOTTOM_MID, 0, statusbar_get_hidden_state()?0:-STATUSBAR_HEIGHT );
+    /* Hint LVGL to refresh only the keyboard area */
+    lv_obj_invalidate( kb_screen );
 
 }
 

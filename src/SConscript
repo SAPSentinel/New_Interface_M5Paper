@@ -1,0 +1,7 @@
+Import("env")
+
+env.BuildSources(
+    os.path.join("$BUILD_DIR", "src"),
+    "..",
+    src_filter=env.get("SRC_FILTER")
+)
