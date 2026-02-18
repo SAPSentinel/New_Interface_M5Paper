@@ -1,3 +1,4 @@
+#if defined(NATIVE_64BIT) && !defined(M5PAPER)
 #include "lvgl_port_m5stack.hpp"
 #include <cstdlib>  // for aligned_alloc
 #include <cstring>  // for memset
@@ -204,3 +205,5 @@ void lvgl_port_unlock(void)
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* NATIVE_64BIT && !M5PAPER */

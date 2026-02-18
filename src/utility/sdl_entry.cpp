@@ -1,3 +1,4 @@
+#if defined(NATIVE_64BIT)
 // Ensure the SDL_main symbol exists for Windows SDL2 main shim
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -15,3 +16,5 @@ extern "C" int SDL_main(int argc, char **argv)
     }
     return 0;
 }
+
+#endif /* NATIVE_64BIT */

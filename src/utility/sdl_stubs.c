@@ -1,3 +1,4 @@
+#if defined(NATIVE_64BIT)
 /**
  * @file sdl_stubs.c
  * Minimal SDL2 wrapper stubs to allow emulator to compile without SDL linking issues
@@ -68,3 +69,5 @@ __attribute__((weak)) const SDL_version* SDL_GetVersion(SDL_version *ver) {
     }
     return ver;
 }
+
+#endif /* NATIVE_64BIT */

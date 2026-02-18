@@ -1,3 +1,4 @@
+#if defined(NATIVE_64BIT)
 // Minimal main for native emulator
 #include "../utility/M5GFX_stub.hpp"
 #include <SDL2/SDL.h>
@@ -26,3 +27,5 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     (void)nCmdShow;
     return main_impl();
 }
+
+#endif /* NATIVE_64BIT */

@@ -1,3 +1,4 @@
+#if defined(NATIVE_64BIT) || !defined(M5PAPER)
 #include "mouse.h"
 #include <SDL2/SDL.h>
 #include <atomic>
@@ -46,3 +47,4 @@ bool mouse_read(lv_indev_drv_t * drv, lv_indev_data_t*data)
     data->state = g_mouse_pressed.load() ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
     return false; /* no more data */
 }
+#endif

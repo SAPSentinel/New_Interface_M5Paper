@@ -1,3 +1,4 @@
+#if defined(NATIVE_64BIT) || !defined(M5PAPER)
 #include "monitor.h"
 #include <SDL2/SDL.h>
 #include <stdio.h>
@@ -86,3 +87,4 @@ void monitor_write_area(int x, int y, int w, int h, const void *pixels_src)
         SDL_RenderPresent(g_renderer);
     }
 }
+#endif

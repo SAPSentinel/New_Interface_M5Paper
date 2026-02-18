@@ -1,3 +1,4 @@
+#if defined(NATIVE_64BIT)
 #include <windows.h>
 
 // Forward declarations
@@ -17,3 +18,4 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
     return 0;
 }
+#endif /* NATIVE_64BIT */

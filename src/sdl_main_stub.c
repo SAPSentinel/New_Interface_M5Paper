@@ -1,3 +1,4 @@
+#if defined(NATIVE_64BIT)
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
@@ -28,3 +29,5 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 #endif
 }
 #endif
+
+#endif /* NATIVE_64BIT */

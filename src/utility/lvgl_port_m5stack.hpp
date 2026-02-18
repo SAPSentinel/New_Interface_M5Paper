@@ -1,6 +1,7 @@
 #ifndef __LVGL_PORT_M5STACK_HPP__
 #define __LVGL_PORT_M5STACK_HPP__
 
+#if defined(NATIVE_64BIT) && !defined(M5PAPER)
 #if defined(ARDUINO)
 #include <Arduino.h>
 #endif
@@ -18,5 +19,6 @@ void lvgl_port_unlock(void);
 #ifdef __cplusplus
 }
 #endif
+#endif // M5PAPER || !NATIVE_64BIT
 
 #endif  // __LVGL_PORT_M5STACK_HPP__
