@@ -32,7 +32,7 @@
 | OS | Windows 10/11 |
 | IDE | VS Code with PlatformIO extension |
 | Shell | PowerShell (pwsh) |
-| Workspace | `D:\platform-io\My-TTGO-Watch` |
+| Workspace | `D:\platform-io\New_Interface_M5Paper` |
 | PlatformIO CLI | `C:\Users\<user>\.platformio\penv\Scripts\platformio.exe` |
 | MSYS2 | Installed (not actively used for build; PlatformIO manages the toolchain) |
 
@@ -50,16 +50,18 @@
 
 ### Key Paths
 ```
-D:\platform-io\My-TTGO-Watch\
+D:\platform-io\New_Interface_M5Paper\
 ├── platformio.ini              # Only m5paper + emulator_m5paper envs
 ├── support\build_fixes.py      # Windows linker workaround (ESSENTIAL)
 ├── src\config.h                # Device-specific defines (RES_X_MAX, etc.)
 ├── src\gui\                    # LVGL UI code
 ├── src\hardware\               # Hardware abstraction (WiFi, BLE, PMU, etc.)
 ├── src\app\                    # Application modules (autocall registration)
-├── lib\lv_conf.h               # LVGL config
+├── lib\lv_conf.h               # LVGL v7.11 config (THE authoritative LVGL config)
 └── .pio\build\m5paper\         # Build output (firmware.bin)
 ```
+
+> **NOTE:** The correct LVGL config is `lib/lv_conf.h`. The file `include/lv_conf.h` must **NOT** exist — if it appears it is likely an unwanted LVGL v8 config that will conflict with LVGL v7.11.
 
 ---
 
@@ -331,6 +333,8 @@ These are hard constraints learned from failures. Violating any of these will br
 | `support/build_fixes.py` must exist and be referenced in `platformio.ini` | Without it, Windows builds fail with "command line too long" errors at the link stage |
 | `toolchain-xtensa32@2.50200.97` (GCC 5.2.0) | Bundled with espressif32@3.3.0. Do not mix toolchains |
 | `lib_archive = true` in `[env:m5paper]` | Required for the archive-based linker workaround |
+| **Every emulator-only file in `src/` MUST be wrapped in `#if defined(NATIVE_64BIT)`** | `build_src_filter = +<*>` compiles ALL files under `src/` for BOTH environments, including the ESP32 m5paper target. Files with SDL2, `windows.h`, or M5GFX headers will fail to compile on ESP32 if not guarded. See Failure 8. |
+| `include/lv_conf.h` must NOT exist | If present, it overrides `lib/lv_conf.h`. Any `include/lv_conf.h` is likely an accidental LVGL v8 config that silently breaks the LVGL v7.11 build |
 
 ### Framework API
 | Constraint | Reason |
@@ -401,6 +405,26 @@ These are hard constraints learned from failures. Violating any of these will br
 **Root Cause:** `MAX_APPS_TILES=1` only had 20 slots. With 3 new apps, total exceeded 20.
 **Fix:** Increased `MAX_APPS_TILES` to 2 (40 slots).
 **Lesson:** When adding apps, count total registered apps and ensure `MAX_APPS_ICON` covers them all.
+
+### Failure 8: Emulator-Only Files Break the m5paper ESP32 Build
+**Symptom:** Build fails with errors like `fatal error: SDL2/SDL.h: No such file or directory`, `'M5GFX' was not declared`, `windows.h: No such file or directory` for the `m5paper` environment.
+**Root Cause:** New files were added to `src/` for the Windows emulator (`emulator_m5paper` environment) without wrapping them in `#if defined(NATIVE_64BIT)`. Because `platformio.ini` has `build_src_filter = +<*>`, PlatformIO compiles **every file under `src/`** for both environments — including the ESP32 target. SDL2, `windows.h`, and `M5GFX.h` do not exist on ESP32.
+
+A secondary bug was an **inverted guard** in `src/utility/lvgl_port_m5stack.hpp`:
+```cpp
+// WRONG — this includes M5GFX.h specifically FOR the m5paper target:
+#if defined(M5PAPER) || !defined(NATIVE_64BIT)
+
+// CORRECT — this includes M5GFX.h only for the emulator:
+#if defined(NATIVE_64BIT) && !defined(M5PAPER)
+```
+A third bug was the presence of `include/lv_conf.h` (an LVGL v8 config file) which overrode the correct `lib/lv_conf.h` (LVGL v7.11), causing API mismatch errors throughout the codebase.
+
+**Fix:** Wrapped all emulator-only files in `#if defined(NATIVE_64BIT)` ... `#endif`. Fixed the inverted guard. Deleted `include/lv_conf.h`.
+
+**Files affected:** `src/sdl_main_stub.c`, `src/winmain.c`, `src/indev/mouse.cpp`, `src/utility/sdl_entry.cpp`, `src/utility/sdl_stubs.c`, `src/utility/sdl_main.cpp`, `src/utility/M5GFX_stub.cpp`, `src/utility/lvgl_port_m5stack.hpp`, `src/utility/lvgl_port_m5stack.cpp`.
+
+**Lesson:** **Every file added to `src/` that uses Windows/SDL2/M5GFX APIs must be guarded with `#if defined(NATIVE_64BIT)`**. Double-check guard logic — an inverted condition (`||` vs `&&`, wrong operands) is as bad as a missing guard. Never create `include/lv_conf.h`.
 
 ---
 
@@ -557,6 +581,17 @@ Some garbled characters in serial output (like `␆`, `~f`, `␀`) are **normal*
 | `src/app/epub_reader/epub_reader_app.cpp` | Uncommented `app_autocall_function`; added proper click handler | App was disabled |
 | `src/app/image_viewer/image_viewer_app.cpp` | Uncommented `app_autocall_function`; fixed click handler; removed redundant `M5.begin()` | App was disabled + bad init |
 | `src/app/sketchpad/sketchpad_app.cpp` | Uncommented `app_autocall_function`; fixed click handler; removed redundant `M5.begin()` | App was disabled + bad init |
+| `src/sdl_main_stub.c` | Wrapped entire file in `#if defined(NATIVE_64BIT)` | Emulator-only; was failing ESP32 compile |
+| `src/winmain.c` | Wrapped entire file in `#if defined(NATIVE_64BIT)` | Emulator-only; was failing ESP32 compile |
+| `src/indev/mouse.cpp` | Wrapped entire file in `#if defined(NATIVE_64BIT)` | Emulator-only SDL2 input; was failing ESP32 compile |
+| `src/display/monitor.cpp` | Guarded with `#if defined(NATIVE_64BIT) \|\| !defined(M5PAPER)` | Emulator SDL2 display driver |
+| `src/utility/sdl_entry.cpp` | Wrapped entire file in `#if defined(NATIVE_64BIT)` | Emulator-only; was failing ESP32 compile |
+| `src/utility/sdl_stubs.c` | Wrapped entire file in `#if defined(NATIVE_64BIT)` | Emulator-only; was failing ESP32 compile |
+| `src/utility/sdl_main.cpp` | Wrapped entire file in `#if defined(NATIVE_64BIT)` | Emulator-only; was failing ESP32 compile |
+| `src/utility/M5GFX_stub.cpp` | Wrapped entire file in `#if defined(NATIVE_64BIT) && !defined(M5PAPER)` | Emulator-only M5GFX shim |
+| `src/utility/lvgl_port_m5stack.hpp` | Fixed **inverted** guard from `defined(M5PAPER) \|\| !defined(NATIVE_64BIT)` → `defined(NATIVE_64BIT) && !defined(M5PAPER)` | Guard was backwards — was including M5GFX on ESP32 |
+| `src/utility/lvgl_port_m5stack.cpp` | Wrapped entire file in `#if defined(NATIVE_64BIT) && !defined(M5PAPER)` | Emulator-only LVGL/M5GFX port |
+| `include/lv_conf.h` | **DELETED** | Was an LVGL v8 config accidentally added; overrode correct `lib/lv_conf.h` (v7.11) |
 
 ---
 
@@ -589,3 +624,10 @@ Some garbled characters in serial output (like `␆`, `~f`, `␀`) are **normal*
 2. After any `platformio.ini` change, do a full clean build
 3. Check link command length in build output (should be ~3000 chars, not 30000+)
 4. If adding new libraries, verify they're compatible with Arduino ESP32 1.x and ESP-IDF 3.x
+
+### When Adding New Files to `src/` for the Emulator
+1. **ALWAYS** wrap the entire file contents in `#if defined(NATIVE_64BIT)` ... `#endif /* NATIVE_64BIT */`
+2. If the file is ALSO excluded from M5Paper specifically, use `#if defined(NATIVE_64BIT) && !defined(M5PAPER)`
+3. Double-check guard logic — an inverted condition silently compiles for the wrong target
+4. **NEVER** create `include/lv_conf.h` — this path is reserved as an accidentally-placed LVGL v8 config and will break the build. The correct LVGL config is `lib/lv_conf.h` only.
+5. After adding, do a full clean build of the `m5paper` environment to confirm no ESP32 compile errors
