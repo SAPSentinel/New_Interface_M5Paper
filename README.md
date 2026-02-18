@@ -7,9 +7,9 @@
 </p>
 <hr/>
 
-# My-TTGO-Watch
+# My-M5Paper v1.1
 
-A GUI named hedge for smartwatch like devices based on ESP32. Currently support for T-Watch2020 (V1,V2,V3), T-Watch2021  (V1 and V2, no ota-updates), M5Paper, M5Core2, WT32-SC01 and native Linux support for testing.
+A GUI named hedge for M5Paper.
 
 ## Features
 
@@ -82,14 +82,7 @@ Since each app includes a different set of files, you may need to delete several
 
 Cf. [Usage](USAGE.md)
 
-# Forks that are recommended
 
-[Pickelhaupt](https://github.com/Pickelhaupt/EUC-Dash-ESP32)<br>
-[FantasyFactory](https://github.com/FantasyFactory/My-TTGO-Watch)<br>
-[NorthernDIY](https://github.com/NorthernDIY/My-TTGO-Watch)<br>
-[linuxthor](https://github.com/linuxthor/Hackers-TTGO-Watch)<br>
-[d03n3rfr1tz3](https://github.com/d03n3rfr1tz3/TTGO.T-Watch.2020)<br>
-[lunokjod](https://github.com/lunokjod/watch)<br>
 
 # For the programmers
 
@@ -98,20 +91,7 @@ app autocall function [the magic behind autocall_function](autocall.md) or add a
 
 # Interface
 
-## TTGO T-Watch 2020
 
-![screenshot](images/screen1.png)
-![screenshot](images/screen2.png)
-![screenshot](images/screen3.png)
-![screenshot](images/screen4.png)
-![screenshot](images/screen5.png)
-![screenshot](images/screen6.png)
-![screenshot](images/screen7.png)
-![screenshot](images/screen8.png)
-![screenshot](images/screen9.png)
-![screenshot](images/screen10.png)
-![screenshot](images/screen11.png)
-![screenshot](images/screen12.png)
 
 ## M5Paper ( downscaled )
 
@@ -142,38 +122,10 @@ app autocall function [the magic behind autocall_function](autocall.md) or add a
 
 Special thanks to the following people for their help:
 
-[5tormChild](https://github.com/5tormChild)<br>
-[bwagstaff](https://github.com/bwagstaff)<br>
-[chrismcna](https://github.com/chrismcna)<br>
-[datacute](https://github.com/datacute)<br>
-[fliuzzi02](https://github.com/fliuzzi02)<br>
-[guyou](https://github.com/guyou)<br>
-[jakub-vesely](https://github.com/jakub-vesely)<br>
-[joshvito](https://github.com/joshvito)<br>
-[JoanMCD](https://github.com/JoanMCD)<br>
-[NorthernDIY](https://github.com/NorthernDIY)<br>
-[Neuroplant](https://github.com/Neuroplant)<br>
-[paulstueber](https://github.com/paulstueber)<br>
-[pavelmachek](https://github.com/pavelmachek)<br>
-[rnisthal](https://github.com/rnisthal)<br>
-[ssspeq](https://github.com/ssspeq)<br>
 
-and the following projects:
+https://github.com/sharandac/My-TTGO-Watch
 
-[ArduinoJson](https://github.com/bblanchon/ArduinoJson)<br>
-[AsyncTCP](https://github.com/me-no-dev/AsyncTCP)<br>
-[ESP32SSDP](https://github.com/luc-github/ESP32SSDP)<br>
-[ESP32-targz](https://github.com/tobozo/ESP32-targz)<br>
-[ESP8266Audio](https://github.com/earlephilhower/ESP8266Audio)<br>
-[ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)<br>
-[LVGL](https://github.com/lvgl)<br>
-[NimBLE-Arduino]()h2zero/NimBLE-Arduino<br>
-[pubsubclient](https://github.com/knolleary/pubsubclient)<br>
-[TinyGPSPlus](mikalhart/TinyGPSPlus)<br>
-[TFT_eSPI](https://github.com/Bodmer/TFT_eSPI)<br>
-[TTGO_TWatch_Library](https://github.com/Xinyuan-LilyGO/TTGO_TWatch_Library)<br>
 
-Every Contribution to this repository is highly welcome! Don't fear to create pull requests which enhance or fix the project, you are going to help everybody.
 <p>
 If you want to donate to the author then you can buy me a coffee.
 <br/><br/>
